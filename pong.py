@@ -51,9 +51,10 @@ class ball:
         if self.y + BALLSIZE > WINSIZE[1]:
             self.dirY *= -1
         if self.x + BALLSIZE > WINSIZE[0]:
-            self.dirX = self.dirX * -1
+            player1.score += 1
+            restart()
         if self.x < 0:
-            #score += 1
+            player2.score += 1
             restart()
         if collision(self.x, self.y, player1.x, player1.y):
             self.dirX = 0.5
@@ -95,6 +96,8 @@ def initialize_game():
     player2 = paddle(620, 320, 0)
     global playball
     playball = ball(320, 320, 1, 1)
+    global font
+    font = pygame.font.SysFont('arial', 35)
     restart()
 
 def restart():
@@ -110,6 +113,9 @@ def render_all():
     player1.render()
     player2.render()
     playball.render()
+    text = (str(player1.score) + "\\" + str(player2.score))
+    ren = font.render(text, True, white)
+    screen.blit(ren, (280, 10))
 def handle_paddles():
     player1.input()
     player2.ai_move()
