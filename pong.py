@@ -18,7 +18,7 @@ class paddle:
         self.y = y
         self.score = score
 
-    def ai_move(self):
+    def ai_move(self, playball):
         if self.y + (PADDLEHEIGHT / 2) < playball.y - (BALLSIZE/2):
             self.y += 1
         if self.y + (PADDLEHEIGHT / 2) > playball.y - (BALLSIZE/2):
@@ -45,23 +45,23 @@ class ball:
     def move(self):
         self.x += self.dirX
         self.y += self.dirY
-    def col_check(self):
+    def col_check(self, player1, player2):
         if self.y < 0:
             self.dirY = self.dirY * -1
         if self.y + BALLSIZE > WINSIZE[1]:
             self.dirY *= -1
         if self.x + BALLSIZE > WINSIZE[0]:
             player1.score += 1
-            restart()
+            restart(self)
         if self.x < 0:
             player2.score += 1
-            restart()
+            restart(self)
         if collision(self.x, self.y, player1.x, player1.y):
             self.dirX = 0.5
-            self.dirY = ((playball.y + BALLSIZE/2) - (player1.y + PADDLEHEIGHT/2))/25
+            self.dirY = ((self.y + BALLSIZE/2) - (player1.y + PADDLEHEIGHT/2))/25
         if collision(self.x, self.y, player2.x, player2.y):
             self.dirX = -0.5
-            self.dirY = ((playball.y + BALLSIZE/2) - (player2.y + PADDLEHEIGHT/2))/25
+            self.dirY = ((self.y + BALLSIZE/2) - (player2.y + PADDLEHEIGHT/2))/25
     def render(self):
         pygame.draw.rect(screen, white, (self.x, self.y, BALLSIZE, BALLSIZE), 0)
 
@@ -73,11 +73,13 @@ def collision(ballX, ballY, paddleX, paddleY):
 
 def main():
     initialize_game()
+
+def play_pong(player1, player2, playball):
     while not Done:
-        handle_paddles()
+        handle_paddles(player1, player2, playball)
         playball.move()
-        playball.col_check()
-        render_all()
+        playball.col_check(player1, player2)
+        render_all(player1, player2, playball)
         pygame.display.update()
         screen.fill(black)
         pygame.event.clear()
@@ -90,17 +92,15 @@ def initialize_game():
     pygame.display.set_caption('pong')
     global clock
     clock = pygame.time.Clock()
-    global player1
     player1 = paddle(10, 320, 0)
-    global player2
     player2 = paddle(620, 320, 0)
-    global playball
     playball = ball(320, 320, 1, 1)
     global font
     font = pygame.font.SysFont('arial', 35)
-    restart()
+    restart(playball)
+    play_pong(player1, player2, playball)
 
-def restart():
+def restart(playball):
     start = random.randrange(0, 2, 1)
     if start == 1:
         playball.dirX = .5
@@ -109,16 +109,16 @@ def restart():
     playball.dirY = random.random()
     playball.x = 320
     playball.y = 320
-def render_all():
+def render_all(player1, player2, playball):
     player1.render()
     player2.render()
     playball.render()
     text = (str(player1.score) + "\\" + str(player2.score))
     ren = font.render(text, True, white)
     screen.blit(ren, (280, 10))
-def handle_paddles():
+def handle_paddles(player1, player2, playball):
     player1.input()
-    player2.ai_move()
+    player2.ai_move(playball)
         
 
 main()
