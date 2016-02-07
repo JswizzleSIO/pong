@@ -27,6 +27,9 @@ class paddle:
             self.y -= 1
 
     def input(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
         keystate = pygame.key.get_pressed()
         if keystate[K_UP]:
             if self.y > 0:
@@ -65,7 +68,7 @@ class ball:
         if collision(self, player2):
             self.dirX = -0.5
             self.dirY = ((playball.y + self.size/2) - (player2.y + player2.length/2))/25
-            coin.new(player2.x, player2.y)
+            coin.new(player2.x, (player2.y + player2.length/2))
     def render(self):
         pygame.draw.rect(screen, white, (self.x, self.y, self.size, self.size), 0)
 
@@ -73,16 +76,20 @@ class coin:
     def __init__(self, x, y, size):
         self.x = x
         self.y = y
+        self.size = size
     def new(x, y):
         newcoin = coin(x, y, 20)
         coinlist.append(newcoin)
-    def move():
-        self.x -= 1
-    def col_check():
-        collision(self, player1)
-    def draw():
+    def move(self):
+        self.x -= 2
+    def col_check(self):
+        global score
+        if collision(self, player1):
+            score += 10
+            return(1)
+    def draw(self):
         screen.blit(coindwg, (self.x, self.y))
-        
+
 
 def collision(ball, player):
     if((ball.x + ball.size >= player.x and ball.x <= player.x + PADDLEWIDTH) and (ball.y + ball.size > player.y and ball.y <= player.y + player.length)):
@@ -93,14 +100,27 @@ def collision(ball, player):
 def main():
     initialize_game()
     while not Done:
-        handle_paddles()
-        playball.move()
-        playball.col_check()
-        render_all()
-        pygame.display.update()
-        screen.fill(black)
-        pygame.event.clear()
-        clock.tick(300)
+        run_game()
+    
+        
+
+def run_game():
+    for object in coinlist:
+        object.move()
+        if object.x < 0 - object.size:
+            coinlist.remove(object)
+            del object
+        elif object.x < 50:
+            if object.col_check():
+                coinlist.remove(object)
+                del object
+    handle_paddles()
+    playball.move()
+    playball.col_check()
+    render_all()
+    pygame.display.update()
+    screen.fill(black)
+    clock.tick(300)
 
 def initialize_game():
     pygame.init()
@@ -148,15 +168,20 @@ def restart():
     playball.x = 320
     playball.y = 320
 def render_all():
+    for object in coinlist:
+        object.draw()
     player1.render()
     player2.render()
     playball.render()
-    text = (str(player1.health) + "\\" + str(player2.health))
+    #text = (str(player1.health) + "\\" + str(player2.health))
+    text = (str(score))
     ren = font.render(text, True, white)
     screen.blit(ren, (310, 10))
+    
 def handle_paddles():
     player1.input()
     player2.ai_move()
         
 
 main()
+
