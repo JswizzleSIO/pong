@@ -145,8 +145,8 @@ def initialize_game():
 
     global upgradelist
     upgradelist = []
-    speedup = upgrade(40, 20, speed_up, "Paddle Speed increase")
-    sizeup = upgrade(40, 20, size_up, "Paddle length increase")
+    speedup = upgrade(10, 20, speed_up, "Paddle Speed increase")
+    sizeup = upgrade(10, 20, size_up, "Paddle length increase")
     upgradelist.append(sizeup)
     upgradelist.append(speedup)
     restart()
@@ -207,7 +207,9 @@ class upgrade:
         self.function = function
         self.name = name
 def store():
+    pygame.key.set_repeat(100, 100)
     pos = 0
+    global instore
     instore = 1
     while instore:
         render_store(pos)
@@ -218,24 +220,42 @@ def store():
             pos = 0
         if pos < 0:
             pos = 1
+        clock.tick(60)
+    pygame.key.set_repeat()
 
 def render_store(pos):
     x = 250
     y = 150
     pygame.draw.rect(screen, white, (x - 30, y + 30 * pos, 20, 20), 0)
     for object in upgradelist:
-        text = (object.name)
+        text = (object.name + " " + str(object.cost))
         ren = font.render(text, True, white)
         screen.blit(ren, (x, y))
         y += 30
+    text = (str(score))
+    ren = font.render(text, True, white)
+    screen.blit(ren, (310, 10))
 
 def store_input(pos):
-    pygame.event.get()
-    keystate = pygame.key.get_pressed()
-    if keystate[K_UP]:
-        pos += 1
-    if keystate[K_DOWN]:
-        pos += 1
+    global instore
+    global score
+    for event in pygame.event.get():
+        if event.type == KEYDOWN:
+            if event.key == K_UP:
+                pos -= 1
+            if event.key == K_DOWN:
+                pos += 1
+            if event.key == K_SPACE:
+                if score >= upgradelist[pos].cost:
+                    print("can afford")
+                    score -= upgradelist[pos].cost
+                    upgradelist[pos].function()
+                else:
+                    print("need more cash")
+            if event.key == K_RETURN:
+                print("k")
+                player1.health = 1
+                instore = 0
     return(pos)
 
 def speed_up():
