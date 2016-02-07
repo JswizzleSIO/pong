@@ -9,6 +9,7 @@ PADDLEWIDTH = 15
 Done = 0
 pygame.init()
 font = pygame.font.Font('Minecraft.ttf', 25)
+coindwg = pygame.image.load(os.path.join(main_dir, 'coin.png'))
 
 class paddle:
     def __init__(self, x, y, health, length, speed, bspeed):
@@ -64,14 +65,23 @@ class ball:
         if collision(self, player2):
             self.dirX = -0.5
             self.dirY = ((playball.y + self.size/2) - (player2.y + player2.length/2))/25
+            coin.new(player2.x, player2.y)
     def render(self):
         pygame.draw.rect(screen, white, (self.x, self.y, self.size, self.size), 0)
 
 class coin:
-    def __init__(self, x, y):
+    def __init__(self, x, y, size):
         self.x = x
         self.y = y
-    def new():
+    def new(x, y):
+        newcoin = coin(x, y, 20)
+        coinlist.append(newcoin)
+    def move():
+        self.x -= 1
+    def col_check():
+        collision(self, player1)
+    def draw():
+        screen.blit(coindwg, (self.x, self.y))
         
 
 def collision(ball, player):
@@ -105,6 +115,10 @@ def initialize_game():
     player2 = paddle(615, 320, 1, 50, 1, 1)
     global playball
     playball = ball(320, 320, 1, 1, 10)
+    global coinlist
+    coinlist = []
+    global score
+    score = 0
     restart()
 
 def restart():
