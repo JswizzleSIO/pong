@@ -1,6 +1,11 @@
 import pygame, random, sys, os
 from pygame.locals import*
+pygame.mixer.pre_init(44100, -16, 2, 2048)
+pygame.init()
 main_dir = os.path.dirname(os.path.abspath("__file__"))
+bump1 = pygame.mixer.Sound(os.path.join('sounds', "bump.wav"))
+hit1 = pygame.mixer.Sound(os.path.join('sounds', "bwubwub.wav"))
+coin1 = pygame.mixer.Sound(os.path.join('sounds', "beep.wav"))
 
 WINSIZE = [640, 640]
 white = (255, 255, 255)
@@ -12,6 +17,9 @@ font = pygame.font.Font('Minecraft.ttf', 25)
 coindwg = pygame.image.load(os.path.join(main_dir, 'coin.png'))
 heart = pygame.image.load(os.path.join(main_dir, 'heart.png'))
 
+#effect = pygame.mixer.Sound(os.path.join(main_dir, '1.wav'))
+
+
 class paddle:
     def __init__(self, x, y, health, length, speed, bspeed):
         self.x = x
@@ -22,9 +30,9 @@ class paddle:
         self.bspeed = bspeed
 
     def ai_move(self):
-        if self.y + (self.length / 2) < playball.y - (playball.size/2):
+        if self.y + (self.length / 2) < playball.y + (playball.size/2) - 20:
             self.y += 1
-        if self.y + (self.length/ 2) > playball.y - (playball.size/2):
+        if self.y + (self.length/ 2) > playball.y + (playball.size/2) - 20:
             self.y -= 1
 
     def input(self):
@@ -55,23 +63,29 @@ class ball:
     def col_check(self):
         if self.y < 0:
             self.dirY = self.dirY * -1
+            play_sound("bounce")
         if self.y + self.size > WINSIZE[1]:
             self.dirY *= -1
+            play_sound("bounce")
         if self.x + self.size > WINSIZE[0]:
             player2.health -= 1
+            play_sound("hit")
             restart()
         if self.x < 0:
             player1.health -= 1
+            play_sound("hit")
             if player1.health < 1:
                 you_died()
             restart()
         if collision(self, player1):
             self.dirX = 0.5
             self.dirY = ((playball.y + self.size/2) - (player1.y + player1.length/2))/25
+            play_sound("bounce")
         if collision(self, player2):
             self.dirX = -0.5
             self.dirY = ((playball.y + self.size/2) - (player2.y + player2.length/2))/25
             coin.new(player2.x, (player2.y + player2.length/2))
+            play_sound("bounce")
     def render(self):
         pygame.draw.rect(screen, white, (self.x, self.y, self.size, self.size), 0)
 
@@ -88,6 +102,7 @@ class coin:
     def col_check(self):
         global score
         if collision(self, player1):
+            play_sound("coin")
             score += 10
             return(1)
     def draw(self):
@@ -101,9 +116,11 @@ def collision(ball, player):
         return(0)
 
 def main():
+    #menu_title()
     initialize_game()
     while not Done:
         run_game()
+#def menu_title():
     
         
 
@@ -126,7 +143,6 @@ def run_game():
     clock.tick(300)
 
 def initialize_game():
-    pygame.init()
     global screen
     screen = pygame.display.set_mode(WINSIZE)
     pygame.display.set_caption('pong legacy')
@@ -153,23 +169,28 @@ def initialize_game():
 
 def restart():
     render_all()
+    pygame.time.wait(1000)
     ren = font.render("3", True, white)
     screen.blit(ren, (320, 280))
     pygame.display.update()
+    play_sound("bounce")
     pygame.time.wait(1000)
     pygame.draw.rect(screen, black, (320, 280, 30, 30), 0)
     ren = font.render("2", True, white)
     screen.blit(ren, (320, 280))
     pygame.display.update()
+    play_sound("bounce")
     pygame.time.wait(1000)
     pygame.draw.rect(screen, black, (320, 280, 30, 30), 0)
     ren = font.render("1", True, white)
     screen.blit(ren, (320, 280))
     pygame.display.update()
+    play_sound("bounce")
     pygame.time.wait(1000)
+    play_sound("coin")
     pygame.draw.rect(screen, black, (320, 280, 30, 30), 0)
     
-    start = random.randrange(0, 2, 1)
+    start = random.randrange(1, 3, 1)
     if start == 1:
         playball.dirX = .5
     if start == 2:
@@ -193,6 +214,14 @@ def render_all():
     ren = font.render(text, True, white)
     screen.blit(ren, (310, 10))
 
+def play_sound(event):
+    if event == "bounce":
+        bump1.play()
+    if event == "hit":
+        hit1.play()
+    if event == "coin":
+        coin1.play()
+
 def you_died():
     ren = font.render("You Died", True, white)
     screen.blit(ren, (300, 280))
@@ -209,13 +238,12 @@ class upgrade:
 def store():
     pygame.key.set_repeat(100, 100)
     pos = 0
-    global instore
     instore = 1
     while instore:
         render_store(pos)
         pygame.display.update()
         screen.fill(black)
-        pos = store_input(pos)
+        pos, instore = store_input(pos, instore)
         if pos > 1:
             pos = 0
         if pos < 0:
@@ -236,8 +264,7 @@ def render_store(pos):
     ren = font.render(text, True, white)
     screen.blit(ren, (310, 10))
 
-def store_input(pos):
-    global instore
+def store_input(pos, instore):
     global score
     for event in pygame.event.get():
         if event.type == KEYDOWN:
@@ -253,10 +280,11 @@ def store_input(pos):
                 else:
                     print("need more cash")
             if event.key == K_RETURN:
-                print("k")
                 player1.health = 1
+                player1.y = 300
+                player2.y = 300
                 instore = 0
-    return(pos)
+    return(pos, instore)
 
 def speed_up():
     player1.speed += 1
