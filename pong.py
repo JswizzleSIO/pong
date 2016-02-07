@@ -10,6 +10,7 @@ Done = 0
 pygame.init()
 font = pygame.font.Font('Minecraft.ttf', 25)
 coindwg = pygame.image.load(os.path.join(main_dir, 'coin.png'))
+heart = pygame.image.load(os.path.join(main_dir, 'heart.png'))
 
 class paddle:
     def __init__(self, x, y, health, length, speed, bspeed):
@@ -61,6 +62,8 @@ class ball:
             restart()
         if self.x < 0:
             player1.health -= 1
+            if player1.health < 1:
+                you_died()
             restart()
         if collision(self, player1):
             self.dirX = 0.5
@@ -81,7 +84,7 @@ class coin:
         newcoin = coin(x, y, 20)
         coinlist.append(newcoin)
     def move(self):
-        self.x -= 2
+        self.x -= .6
     def col_check(self):
         global score
         if collision(self, player1):
@@ -132,13 +135,20 @@ def initialize_game():
     global player1
     global player2
     player1 = paddle(10, 320, 1, 50, 1, 1)
-    player2 = paddle(615, 320, 1, 50, 1, 1)
+    player2 = paddle(615, 320, 3, 50, 1, 1)
     global playball
     playball = ball(320, 320, 1, 1, 10)
     global coinlist
     coinlist = []
     global score
     score = 0
+
+    global upgradelist
+    upgradelist = []
+    speedup = upgrade(40, 20, speed_up, "Paddle Speed increase")
+    sizeup = upgrade(40, 20, size_up, "Paddle length increase")
+    upgradelist.append(sizeup)
+    upgradelist.append(speedup)
     restart()
 
 def restart():
@@ -168,19 +178,75 @@ def restart():
     playball.x = 320
     playball.y = 320
 def render_all():
+    heartX = 0
+    heartY = 0
+    for heartX in range (player1.health):
+        screen.blit(heart, (heartX * 35 + 10, heartY))
+    for heartX in range (player2.health):
+        screen.blit(heart, (WINSIZE[0] - heartX*35 - 35, heartY))
     for object in coinlist:
         object.draw()
     player1.render()
     player2.render()
     playball.render()
-    #text = (str(player1.health) + "\\" + str(player2.health))
     text = (str(score))
     ren = font.render(text, True, white)
     screen.blit(ren, (310, 10))
-    
+
+def you_died():
+    ren = font.render("You Died", True, white)
+    screen.blit(ren, (300, 280))
+    pygame.display.update()
+    pygame.time.wait(1000)
+    store()
+
+class upgrade:
+    def __init__(self, cost, costInc, function, name):
+        self.cost = cost
+        self.costInc = costInc
+        self.function = function
+        self.name = name
+def store():
+    pos = 0
+    instore = 1
+    while instore:
+        render_store(pos)
+        pygame.display.update()
+        screen.fill(black)
+        pos = store_input(pos)
+        if pos > 1:
+            pos = 0
+        if pos < 0:
+            pos = 1
+
+def render_store(pos):
+    x = 250
+    y = 150
+    pygame.draw.rect(screen, white, (x - 30, y + 30 * pos, 20, 20), 0)
+    for object in upgradelist:
+        text = (object.name)
+        ren = font.render(text, True, white)
+        screen.blit(ren, (x, y))
+        y += 30
+
+def store_input(pos):
+    pygame.event.get()
+    keystate = pygame.key.get_pressed()
+    if keystate[K_UP]:
+        pos += 1
+    if keystate[K_DOWN]:
+        pos += 1
+    return(pos)
+
+def speed_up():
+    player1.speed += 1
+
+def size_up():
+    player1.length += 50
 def handle_paddles():
     player1.input()
     player2.ai_move()
+
         
 
 main()
