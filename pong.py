@@ -157,8 +157,12 @@ def main():
         run_game()
 def menu_title():
     pygame.mixer.music.play(-1, 0.2)
+    ren = font.render("Paddle Mans Evloutionary Grinding Adventure", True, white)
+    screen.blit(ren, (30, 100))
+    ren = font.render("AKA", True, white)
+    screen.blit(ren, (300, 165))
     ren = titlefont.render("Pong Legacy", True, white)
-    screen.blit(ren, (150, 100))
+    screen.blit(ren, (150, 220))
     pygame.display.update()
     key_wait()
     pygame.mixer.music.fadeout(2000)
@@ -178,8 +182,8 @@ def initialize_game():
     clock = pygame.time.Clock()
     global player1
     global player2
-    player1 = paddle(10, 320, 1, 50, 5, 1)
-    player2 = paddle(615, 320, 3, 50, 5, 1)
+    player1 = paddle(10, 320, 1, 20, 2, 1)
+    player2 = paddle(615, 320, 12, 50, 5, 1)
     global playball
     playball = ball(320, 320, 1, 1, 10)
     global coinlist
@@ -217,7 +221,9 @@ def restart():
     pygame.time.wait(1000)
     play_sound("coin")
     pygame.draw.rect(screen, black, (320, 280, 30, 30), 0)
-    
+
+    player1.y = 320
+    player2.y = 320
     start = random.randrange(1, 3, 1)
     if start == 1:
         playball.dirX = 2.5
@@ -232,7 +238,11 @@ def render_all():
     for heartX in range (player1.health):
         screen.blit(heart, (heartX * 35 + 10, heartY))
     for heartX in range (player2.health):
-        screen.blit(heart, (WINSIZE[0] - heartX*35 - 35, heartY))
+        HDX = heartX*35
+        if heartX > 8:
+            heartY = 40
+            HDX -= 8 * 35
+        screen.blit(heart, (WINSIZE[0] - HDX, heartY))
     for object in coinlist:
         object.draw()
     player1.render()
@@ -323,6 +333,7 @@ def store_input(pos, instore):
                 if score >= upgradelist[pos].cost:
                     print("can afford")
                     score -= upgradelist[pos].cost
+                    upgradelist[pos].cost += upgradelist[pos].costInc
                     upgradelist[pos].function()
                 else:
                     print("need more cash")
@@ -335,9 +346,9 @@ def store_input(pos, instore):
     return(pos, instore)
 
 def speed_up():
-    player1.speed += 1
+    player1.speed += .5
 def size_up():
-    player1.length += 50
+    player1.length += 5
 
 def handle_paddles():
     player1.input()
