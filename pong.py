@@ -28,13 +28,14 @@ aiOffset = 0
 
 
 class paddle:
-    def __init__(self, x, y, health, length, speed, bspeed):
+    def __init__(self, x, y, health, maxhealth, length, speed, bspeed):
         self.x = x
         self.y = y
         self.health = health
         self.length = length
         self.speed = speed
         self.bspeed = bspeed
+        self.maxhealth = maxhealth
 
     def ai_move(self):
         #ignoring the ai offset this would check if the paddle center was at the ball center
@@ -159,13 +160,19 @@ def menu_title():
     pygame.mixer.music.play(-1, 0.2)
     ren = font.render("Paddle Mans Evloutionary Grinding Adventure", True, white)
     screen.blit(ren, (30, 100))
+    ren = font.render("PRESS SPACE", True, white)
+    screen.blit(ren, (225, 500))
+    pygame.display.update()
+    key_wait()
     ren = font.render("AKA", True, white)
     screen.blit(ren, (300, 165))
+    pygame.display.update()
+    key_wait()
     ren = titlefont.render("Pong Legacy", True, white)
     screen.blit(ren, (150, 220))
     pygame.display.update()
     key_wait()
-    pygame.mixer.music.fadeout(2000)
+    pygame.mixer.music.fadeout(2500)
     
 def run_game():
     handle_coins()
@@ -182,8 +189,8 @@ def initialize_game():
     clock = pygame.time.Clock()
     global player1
     global player2
-    player1 = paddle(10, 320, 1, 20, 2, 1)
-    player2 = paddle(615, 320, 12, 50, 5, 1)
+    player1 = paddle(10, 320, 1, 1, 20, 2, 1)
+    player2 = paddle(615, 320, 12, 12, 50, 5, 1)
     global playball
     playball = ball(320, 320, 1, 1, 10)
     global coinlist
@@ -193,10 +200,12 @@ def initialize_game():
 
     global upgradelist
     upgradelist = []
-    speedup = upgrade(10, 20, speed_up, "Paddle Speed increase")
-    sizeup = upgrade(10, 20, size_up, "Paddle length increase")
+    speedup = upgrade(10, 20, speed_up, "Paddle Speed increase", 0)
+    sizeup = upgrade(10, 20, size_up, "Paddle length increase", 0)
+    healthup = upgrade(10, 20, health_up, "Plus one life", 0)
     upgradelist.append(sizeup)
     upgradelist.append(speedup)
+    upgradelist.append(healthup)
     restart()
 
 def restart():
@@ -283,11 +292,12 @@ def you_died():
 
 class upgrade:
     #class for upgrade, pretty simple
-    def __init__(self, cost, costInc, function, name):
+    def __init__(self, cost, costInc, function, name, level):
         self.cost = cost
         self.costInc = costInc
         self.function = function
         self.name = name
+        self.level = level
 
 def store():
     pygame.key.set_repeat(100, 100)
@@ -298,10 +308,10 @@ def store():
         pygame.display.update()
         screen.fill(black)
         pos, instore = store_input(pos, instore)
-        if pos > 1:
+        if pos > 2:
             pos = 0
         if pos < 0:
-            pos = 1
+            pos = 2
         clock.tick(60)
     pygame.key.set_repeat()
 
@@ -311,13 +321,17 @@ def render_store(pos):
     #draw the upgrade options from the upgrade list and draw a box beside the option you are on
     pygame.draw.rect(screen, white, (x - 30, y + 30 * pos, 20, 20), 0)
     for object in upgradelist:
-        text = (object.name + " " + str(object.cost))
+        text = ("lv" + str(object.level) + " " + object.name + " " + str(object.cost))
         ren = font.render(text, True, white)
         screen.blit(ren, (x, y))
         y += 30
     text = (str(score))
     ren = font.render(text, True, white)
     screen.blit(ren, (310, 10))
+    ren = font.render("Press Space to Upgrade", True, white)
+    screen.blit(ren, (200, 450))
+    ren = font.render("Press Enter to Begin Anew", True, white)
+    screen.blit(ren, (200, 510))
 
 def store_input(pos, instore):
     #cycle through upgrade options, pos is your cursor positin in the store
@@ -331,24 +345,29 @@ def store_input(pos, instore):
             if event.key == K_SPACE:
                 #space to buy and run the upgrade function if you can afford
                 if score >= upgradelist[pos].cost:
-                    print("can afford")
                     score -= upgradelist[pos].cost
                     upgradelist[pos].cost += upgradelist[pos].costInc
+                    upgradelist[pos].level += 1
                     upgradelist[pos].function()
+                    play_sound("coin")
                 else:
-                    print("need more cash")
+                    play_sound("bounce")
             #enter to go back and play again
             if event.key == K_RETURN:
-                player1.health = 1
+                player1.health = player1.maxhealth
+                player2.health = player2.maxhealth
                 player1.y = 300
                 player2.y = 300
                 instore = 0
+                score = 0
     return(pos, instore)
 
 def speed_up():
     player1.speed += .5
 def size_up():
     player1.length += 5
+def health_up():
+    player1.maxhealth += 1
 
 def handle_paddles():
     player1.input()
