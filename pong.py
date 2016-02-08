@@ -92,6 +92,8 @@ class ball:
             player2.health -= 1
             play_sound("hit")
             score += 5
+            if player2.health < 1:
+                win()
             restart()
         if self.x < 0:
             #same thing but checks for no health left and runs the you died function
@@ -105,13 +107,13 @@ class ball:
             #only if the ball is headed towards you
             #done to avoid bouncing the ball again when its already headed away
             if collision(self, player1):
-                self.dirX = 2.5
+                self.dirX = 3
                 self.dirY = (((playball.y + self.size/2) - (player1.y + player1.length/2))/(player1.length/2))*5
                 play_sound("bounce")
         if self.dirX > 0:
             #same dealio but also set aiOffset after a bounce and create a new coin
             if collision(self, player2):
-                self.dirX = -2.5
+                self.dirX = -3
                 self.dirY = (((playball.y + self.size/2) - (player2.y + player2.length/2))/(player2.length/2))*5
                 coin.new(player2.x, (player2.y + player2.length/2))
                 aiOffset = random.randrange(0, 48, 1)-24
@@ -128,7 +130,7 @@ class coin:
         newcoin = coin(x, y, 20)
         coinlist.append(newcoin)
     def move(self):
-        self.x -= 3
+        self.x -= 3.5
     def col_check(self):
         #calls collision, if you get the coin with the paddle score increases by 10
         global score
@@ -233,12 +235,12 @@ def restart():
 
     player1.y = 320
     player2.y = 320
-    start = random.randrange(1, 3, 1)
-    if start == 1:
-        playball.dirX = 2.5
-    if start == 2:
-        playball.dirX = -2.5
-    playball.dirY = random.random()*5
+    start = random.randrange(1, 4, 1)
+    if start == 1 or start == 2:
+        playball.dirX = 3
+    if start == 3:
+        playball.dirX = -3
+    playball.dirY = random.random()*2
     playball.x = 320
     playball.y = 320
 def render_all():
@@ -247,10 +249,10 @@ def render_all():
     for heartX in range (player1.health):
         screen.blit(heart, (heartX * 35 + 10, heartY))
     for heartX in range (player2.health):
-        HDX = heartX*35
-        if heartX > 8:
+        HDX = heartX*35 + 35
+        if heartX > 7:
             heartY = 40
-            HDX -= 8 * 35
+            HDX -= 9 * 35
         screen.blit(heart, (WINSIZE[0] - HDX, heartY))
     for object in coinlist:
         object.draw()
@@ -318,7 +320,7 @@ def store():
     pygame.key.set_repeat()
 
 def render_store(pos):
-    x = 250
+    x = 200
     y = 150
     #draw the upgrade options from the upgrade list and draw a box beside the option you are on
     pygame.draw.rect(screen, white, (x - 30, y + 30 * pos, 20, 20), 0)
@@ -339,6 +341,8 @@ def store_input(pos, instore):
     #cycle through upgrade options, pos is your cursor positin in the store
     global score
     for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit(); sys.exit()
         if event.type == KEYDOWN:
             if event.key == K_UP:
                 pos -= 1
@@ -375,6 +379,17 @@ def health_up():
 def handle_paddles():
     player1.input()
     player2.ai_move()
+
+def win():
+    pygame.mixer.music.play(-1)
+    ren = titlefont.render("You Defeated", True, white)
+    screen.blit(ren, (150, 220))
+    pygame.display.update()
+    ren = font.render("Press Space to exit", True, white)
+    screen.blit(ren, (200, 300))
+    pygame.display.update()
+    key_wait()
+    pygame.quit(); sys.exit()
 
 def key_wait():
     while True:
