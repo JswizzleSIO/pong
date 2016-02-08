@@ -4,9 +4,10 @@ pygame.mixer.pre_init(44100, -16, 2, 2048)
 pygame.init()
 #set main directory and load sounds from 'sounds folder'
 main_dir = os.path.dirname(os.path.abspath("__file__"))
-bump1 = pygame.mixer.Sound(os.path.join('sounds', "bump.wav"))
-hit1 = pygame.mixer.Sound(os.path.join('sounds', "bwubwub.wav"))
-coin1 = pygame.mixer.Sound(os.path.join('sounds', "beep.wav"))
+bump1 = pygame.mixer.Sound(os.path.join('sounds', "bump.ogg"))
+hit1 = pygame.mixer.Sound(os.path.join('sounds', "bwubwub.ogg"))
+coin1 = pygame.mixer.Sound(os.path.join('sounds', "beep.ogg"))
+pygame.mixer.music.load(os.path.join('sounds', "music.ogg"))
 #set winsize and basic colours
 WINSIZE = [640, 640]
 white = (255, 255, 255)
@@ -17,6 +18,7 @@ Done = 0
 pygame.init()
 #load font and images
 font = pygame.font.Font('Minecraft.ttf', 25)
+titlefont = pygame.font.Font('Minecraft.ttf', 50)
 coindwg = pygame.image.load(os.path.join(main_dir, 'coin.png'))
 heart = pygame.image.load(os.path.join(main_dir, 'heart.png'))
 #set ai offset, see ai move function in paddle class
@@ -145,14 +147,22 @@ def collision(ball, player):
         return(0)
 
 def main():
-    #menu_title()
+    global screen
+    screen = pygame.display.set_mode(WINSIZE)
+    pygame.display.set_caption('pong legacy')
+    
+    menu_title()
     initialize_game()
     while not Done:
         run_game()
-#def menu_title():
+def menu_title():
+    pygame.mixer.music.play(-1, 0.2)
+    ren = titlefont.render("Pong Legacy", True, white)
+    screen.blit(ren, (150, 100))
+    pygame.display.update()
+    key_wait()
+    pygame.mixer.music.fadeout(2000)
     
-        
-
 def run_game():
     handle_coins()
     handle_paddles()
@@ -164,9 +174,6 @@ def run_game():
     clock.tick(60)
 
 def initialize_game():
-    global screen
-    screen = pygame.display.set_mode(WINSIZE)
-    pygame.display.set_caption('pong legacy')
     global clock
     clock = pygame.time.Clock()
     global player1
@@ -329,12 +336,21 @@ def store_input(pos, instore):
 
 def speed_up():
     player1.speed += 1
-
 def size_up():
     player1.length += 50
+
 def handle_paddles():
     player1.input()
     player2.ai_move()
+
+def key_wait():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                return
 
         
 
