@@ -24,8 +24,6 @@ heart = pygame.image.load(os.path.join(main_dir, 'heart.png'))
 #set ai offset, see ai move function in paddle class
 aiOffset = 0
 
-#effect = pygame.mixer.Sound(os.path.join(main_dir, '1.wav'))
-
 
 class paddle:
     def __init__(self, x, y, health, maxhealth, length, speed, bspeed):
@@ -78,6 +76,7 @@ class ball:
         self.y += self.dirY
     def col_check(self):
         global aiOffset
+        global score
         #ball hits top screen will set y velocity to be opposite
         if self.y < 0:
             if self.dirY < 0:#this checks to make sure that ball hasn't been bounced a bit out of bounds and is in the process of bouncing back in
@@ -92,6 +91,7 @@ class ball:
             #if ball hits player2(ai)side remove 1 of their health units, play hit sound and restart
             player2.health -= 1
             play_sound("hit")
+            score += 5
             restart()
         if self.x < 0:
             #same thing but checks for no health left and runs the you died function
@@ -157,7 +157,7 @@ def main():
     while not Done:
         run_game()
 def menu_title():
-    pygame.mixer.music.play(-1, 0.2)
+    pygame.mixer.music.play(-1, 0.1)
     ren = font.render("Paddle Mans Evloutionary Grinding Adventure", True, white)
     screen.blit(ren, (30, 100))
     ren = font.render("PRESS SPACE", True, white)
@@ -165,7 +165,7 @@ def menu_title():
     pygame.display.update()
     key_wait()
     ren = font.render("AKA", True, white)
-    screen.blit(ren, (300, 165))
+    screen.blit(ren, (290, 165))
     pygame.display.update()
     key_wait()
     ren = titlefont.render("Pong Legacy", True, white)
@@ -200,9 +200,9 @@ def initialize_game():
 
     global upgradelist
     upgradelist = []
-    speedup = upgrade(10, 20, speed_up, "Paddle Speed increase", 0)
-    sizeup = upgrade(10, 20, size_up, "Paddle length increase", 0)
-    healthup = upgrade(10, 20, health_up, "Plus one life", 0)
+    speedup = upgrade(10, 10, speed_up, "Paddle Speed increase", 0)
+    sizeup = upgrade(10, 10, size_up, "Paddle length increase", 0)
+    healthup = upgrade(30, 30, health_up, "Max life plus 1", 0)
     upgradelist.append(sizeup)
     upgradelist.append(speedup)
     upgradelist.append(healthup)
@@ -300,6 +300,8 @@ class upgrade:
         self.level = level
 
 def store():
+    pygame.mixer.music.set_volume(.1)
+    pygame.mixer.music.play(-1)
     pygame.key.set_repeat(100, 100)
     pos = 0
     instore = 1
@@ -360,6 +362,7 @@ def store_input(pos, instore):
                 player2.y = 300
                 instore = 0
                 score = 0
+                pygame.mixer.music.fadeout(2500)
     return(pos, instore)
 
 def speed_up():
