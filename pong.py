@@ -122,15 +122,17 @@ class ball:
         pygame.draw.rect(screen, white, (self.x, self.y, self.size, self.size), 0)
 
 class coin:
-    def __init__(self, x, y, size):
+    def __init__(self, x, y, size, speed):
         self.x = x
         self.y = y
         self.size = size
+        self.speed = speed
     def new(x, y):
-        newcoin = coin(x, y, 20)
+        speed = (random.random()*4) + 1
+        newcoin = coin(x, y, 20, speed)
         coinlist.append(newcoin)
     def move(self):
-        self.x -= 3.5
+        self.x -= self.speed
     def col_check(self):
         #calls collision, if you get the coin with the paddle score increases by 10
         global score
