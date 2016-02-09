@@ -4,10 +4,10 @@ pygame.mixer.pre_init(44100, -16, 2, 2048)
 pygame.init()
 #set main directory and load sounds from 'sounds folder'
 main_dir = os.path.dirname(os.path.abspath("__file__"))
-bump1 = pygame.mixer.Sound(os.path.join('sounds', "bump.ogg"))
-hit1 = pygame.mixer.Sound(os.path.join('sounds', "bwubwub.ogg"))
-coin1 = pygame.mixer.Sound(os.path.join('sounds', "beep.ogg"))
-pygame.mixer.music.load(os.path.join('sounds', "music.ogg"))
+bump1 = pygame.mixer.Sound(os.path.join(main_dir, "bump.wav"))
+hit1 = pygame.mixer.Sound(os.path.join(main_dir, "bwubwub.wav"))
+coin1 = pygame.mixer.Sound(os.path.join(main_dir, "beep.wav"))
+pygame.mixer.music.load(os.path.join(main_dir, "music.wav"))
 #set winsize and basic colours
 WINSIZE = [640, 640]
 white = (255, 255, 255)
@@ -161,7 +161,7 @@ def main():
     while not Done:
         run_game()
 def menu_title():
-    pygame.mixer.music.play(-1, 0.1)
+    pygame.mixer.music.play(-1)
     ren = font.render("Paddle Mans Evloutionary Grinding Adventure", True, white)
     screen.blit(ren, (30, 100))
     ren = font.render("PRESS SPACE", True, white)
