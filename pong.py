@@ -213,6 +213,8 @@ def initialize_game():
     restart()
 
 def restart():
+    for object in coinlist:
+        coinlist.remove(object)
     render_all()
     pygame.time.wait(1000)
     ren = font.render("3", True, white)
